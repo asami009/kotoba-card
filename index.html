@@ -138,8 +138,13 @@ h1{font-family:var(--mincho);font-weight:700;font-size:34px;letter-spacing:.18em
 }
 .cardback::before{content:"";position:absolute;inset:7%;border:1px solid rgba(214,180,106,.5);border-radius:10px}
 .cardback::after{content:"";position:absolute;inset:9.5%;border:.5px solid rgba(214,180,106,.28);border-radius:8px}
-.cardback svg{width:46%;height:auto;position:relative;z-index:1}
+.cardback svg{width:46%;height:auto}
 
+/* iPhone(Safari)は裏面を隠す設定が子要素に効かないことがあるので、めくりの半分で見えなくする */
+.flip .face{transition:visibility 0s linear .37s}
+.flip.open .face.cardback{visibility:hidden}
+.flip:not(.open) .face.front{visibility:hidden}
+.face *{-webkit-backface-visibility:hidden;backface-visibility:hidden}
 .front{
   transform:rotateY(180deg);
   background:radial-gradient(120% 90% at 50% 0%,#fffaf0 0%,#f6eedb 70%,#eee1c4 100%);
