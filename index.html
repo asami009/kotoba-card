@@ -1,0 +1,734 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ことばのカード</title>
+<meta name="description" content="3つの質問に答えると、いまの自分に合う偉人のことばが1枚出てくるカード">
+<meta name="robots" content="noindex, nofollow">
+<meta property="og:title" content="ことばのカード">
+<meta property="og:description" content="3つの質問に答えると、いまの自分に合う偉人のことばが1枚出てくるよ">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://asami009.github.io/kotoba-card/">
+<meta property="og:image" content="https://asami009.github.io/kotoba-card/icon-512.png">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#0c1430">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ことばのカード">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700&family=Zen+Old+Mincho:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --night:#0c1430; --night2:#162350; --night3:#1f2f66;
+  --gold:#d6b46a; --gold2:#f0dca6; --goldLine:rgba(214,180,106,.34);
+  --ivory:#f7f0df; --ink:#18203d; --inkSoft:#4a5272;
+  --rose:#ef8b9a;
+  --mincho:"Zen Old Mincho","Hiragino Mincho ProN","Yu Mincho",serif;
+  --gothic:"Zen Kaku Gothic New","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{
+  min-height:100dvh; overflow-x:hidden;
+  background-color:var(--night);
+  background-image:radial-gradient(130% 70% at 50% -10%, #23357a 0%, var(--night) 55%, #070b1d 100%);
+  background-attachment:fixed;
+  color:var(--ivory); font-family:var(--gothic);
+  -webkit-font-smoothing:antialiased;
+}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button:focus-visible,a:focus-visible{outline:2px solid var(--gold2);outline-offset:3px}
+
+/* 星空 */
+.sky{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.sky i{position:absolute;border-radius:50%;background:#fff;opacity:.2;animation:tw 5s ease-in-out infinite}
+@keyframes tw{0%,100%{opacity:.12}50%{opacity:.75}}
+
+.screen{
+  display:none; position:relative; z-index:1;
+  min-height:100dvh; max-width:460px; margin:0 auto;
+  padding:calc(env(safe-area-inset-top) + 14px) 16px calc(env(safe-area-inset-bottom) + 26px);
+  flex-direction:column;
+}
+.screen.active{display:flex;animation:fadeIn .35s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+/* ---------- はじめ ---------- */
+#home{align-items:center;justify-content:center;text-align:center;gap:16px}
+.emblem{width:56px;color:var(--gold)}
+h1{font-family:var(--mincho);font-weight:700;font-size:34px;letter-spacing:.18em;margin-right:-.18em;color:var(--gold2);line-height:1.3}
+.lead{font-size:15px;line-height:1.95;color:rgba(247,240,223,.82)}
+.deck{position:relative;width:220px;height:178px;margin:8px 0 10px}
+.deck .cardback{position:absolute;left:50%;top:8px;width:108px;margin-left:-54px;aspect-ratio:5/7;transform-origin:50% 125%}
+.deck .cardback:nth-child(1){transform:rotate(-15deg)}
+.deck .cardback:nth-child(3){transform:rotate(15deg)}
+.deck .cardback:nth-child(2){z-index:2;animation:float 4s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+.btn-gold{
+  width:100%;max-width:320px;height:58px;border-radius:999px;
+  background:linear-gradient(180deg,#ebd08f,#c79f52);color:#1b1532;
+  font-weight:700;font-size:18px;letter-spacing:.14em;
+  box-shadow:0 8px 26px rgba(214,180,106,.25),inset 0 1px 0 rgba(255,255,255,.55);
+  transition:transform .12s;
+}
+.btn-gold:active{transform:translateY(1px) scale(.985)}
+.btn-ghost{
+  width:100%;max-width:320px;height:50px;border-radius:999px;
+  border:1px solid var(--goldLine);color:var(--gold2);font-size:15px;font-weight:700;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;
+}
+.btn-ghost svg{width:18px;height:18px}
+.count{display:inline-grid;place-items:center;min-width:24px;height:22px;padding:0 7px;border-radius:99px;background:rgba(214,180,106,.18);font-size:12px}
+
+/* ---------- 上のバー ---------- */
+.bar{display:flex;align-items:center;justify-content:space-between;min-height:44px;margin-bottom:6px;gap:8px}
+.back{display:inline-flex;align-items:center;gap:2px;height:44px;padding:0 10px 0 2px;color:var(--gold2);font-size:15px;font-weight:700}
+.back svg{width:22px;height:22px}
+.dots{display:flex;gap:8px}
+.dots i{width:8px;height:8px;border-radius:50%;background:rgba(214,180,106,.22);transition:background .25s}
+.dots i.on{background:var(--gold)}
+.bar .spacer{min-width:64px}
+.bar-title{font-family:var(--mincho);font-size:17px;font-weight:700;color:var(--gold2);letter-spacing:.08em}
+
+/* ---------- 質問 ---------- */
+.qwrap{flex:1;display:flex;flex-direction:column;justify-content:center;gap:26px;padding-bottom:36px}
+.qnum{font-family:var(--mincho);color:var(--gold);font-size:14px;letter-spacing:.35em;text-align:center}
+.qtext{font-family:var(--mincho);font-weight:700;font-size:25px;line-height:1.6;text-align:center}
+.opts{display:flex;flex-direction:column;gap:12px}
+.opt{
+  display:flex;align-items:center;gap:14px;min-height:66px;padding:12px 18px;border-radius:16px;
+  background:linear-gradient(180deg,rgba(35,53,115,.78),rgba(22,35,80,.78));
+  border:1px solid var(--goldLine);text-align:left;font-size:18px;font-weight:700;
+  transition:transform .12s,border-color .15s,background .15s;
+}
+.opt:active,.opt.picked{transform:scale(.98);border-color:var(--gold);background:linear-gradient(180deg,#2d4188,#203070)}
+.opt .ico{width:36px;height:36px;color:var(--gold);flex:none}
+.opt .mark{width:9px;height:9px;transform:rotate(45deg);background:var(--gold);flex:none;margin:0 8px 0 4px;border-radius:1px}
+.opt .sub{display:block;font-size:13px;font-weight:500;color:rgba(247,240,223,.62);margin-top:2px}
+
+/* ---------- カード ---------- */
+#draw{gap:16px}
+.stage{position:relative;width:min(80vw,330px);margin:2px auto 0;perspective:1400px}
+.flip{position:relative;width:100%;aspect-ratio:5/7;transform-style:preserve-3d;transition:transform .75s cubic-bezier(.3,.75,.25,1);container-type:inline-size;z-index:2}
+.flip.open{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;border-radius:18px;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden}
+.ghost{position:absolute;inset:0;z-index:1;opacity:0}
+.stage.shuffling .g1{animation:shufL .9s ease-in-out}
+.stage.shuffling .g2{animation:shufR .9s ease-in-out}
+.stage.shuffling .flip{animation:bob .9s ease-in-out}
+@keyframes shufL{0%{opacity:0;transform:none}15%{opacity:1}45%{transform:translateX(-44%) rotate(-10deg)}80%{opacity:1;transform:translateX(-6%) rotate(-2deg)}100%{opacity:0;transform:none}}
+@keyframes shufR{0%{opacity:0;transform:none}15%{opacity:1}45%{transform:translateX(44%) rotate(10deg)}80%{opacity:1;transform:translateX(6%) rotate(2deg)}100%{opacity:0;transform:none}}
+@keyframes bob{0%,100%{transform:none}45%{transform:translateY(-10px) scale(1.02)}}
+
+.cardback{
+  border-radius:18px;display:grid;place-items:center;color:var(--gold);
+  background:
+    radial-gradient(circle at 50% 50%,rgba(214,180,106,.12) 0 27%,transparent 28%),
+    radial-gradient(rgba(214,180,106,.2) 1px,transparent 1.5px) 0 0/13px 13px,
+    linear-gradient(160deg,#25377a,#121b40 60%,#0b1230);
+  border:1px solid rgba(214,180,106,.6);
+  box-shadow:0 18px 40px rgba(0,0,0,.45);
+}
+.cardback::before{content:"";position:absolute;inset:7%;border:1px solid rgba(214,180,106,.5);border-radius:10px}
+.cardback::after{content:"";position:absolute;inset:9.5%;border:.5px solid rgba(214,180,106,.28);border-radius:8px}
+.cardback svg{width:46%;height:auto;position:relative;z-index:1}
+
+.front{
+  transform:rotateY(180deg);
+  background:radial-gradient(120% 90% at 50% 0%,#fffaf0 0%,#f6eedb 70%,#eee1c4 100%);
+  color:var(--ink);box-shadow:0 18px 40px rgba(0,0,0,.45);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:10% 11% 9%;text-align:center;
+}
+.front::before{content:"";position:absolute;inset:8px;border:1px solid #c6a25a;border-radius:12px;pointer-events:none}
+.front::after{content:"";position:absolute;inset:12px;border:.5px solid rgba(198,162,90,.55);border-radius:9px;pointer-events:none}
+.f-orn{width:30%;color:#b8914a;margin-bottom:7%}
+.f-face{width:36%;aspect-ratio:1;border-radius:50%;flex:none;position:relative;overflow:hidden;margin-bottom:6%;
+  background:radial-gradient(circle at 50% 40%,#fffdf6,#f3e8cf);border:1.5px solid #c6a25a;box-shadow:0 0 0 4px rgba(198,162,90,.16)}
+.f-face[hidden]{display:none}
+.f-face img{position:absolute;left:11%;top:11%;width:78%;height:78%;object-fit:contain}
+.f-quote{font-family:var(--mincho);font-weight:700;line-height:1.75;letter-spacing:.03em;white-space:pre-line;line-break:strict;word-break:keep-all;overflow-wrap:anywhere;text-wrap:balance}
+.f-quote.xl{font-size:28px;font-size:8.8cqw}
+.f-quote.l{font-size:23px;font-size:7.2cqw}
+.f-quote.m{font-size:18.5px;font-size:5.8cqw}
+.f-quote.s{font-size:16px;font-size:5cqw;line-height:1.68}
+.f-rule{width:22%;height:1px;background:#c6a25a;margin:8% 0 5%;flex:none}
+.f-who{font-family:var(--mincho);font-weight:700;font-size:17px;font-size:5.4cqw;letter-spacing:.06em;word-break:keep-all;overflow-wrap:anywhere;text-wrap:balance;line-height:1.5}
+.f-role{font-size:12px;font-size:3.8cqw;color:var(--inkSoft);margin-top:3px;line-height:1.5}
+.f-src{font-size:10.5px;font-size:3.3cqw;color:#8a7f63;margin-top:5%;line-height:1.5}
+
+.kai{
+  opacity:0;transform:translateY(8px);transition:opacity .45s ease,transform .45s ease;
+  background:rgba(12,20,48,.6);border:1px solid rgba(214,180,106,.25);border-radius:16px;padding:14px 18px;
+}
+.kai.show{opacity:1;transform:none}
+.kai-label{display:block;font-size:12px;letter-spacing:.22em;color:var(--gold);margin-bottom:6px;font-weight:700}
+.kai p{font-size:16px;line-height:1.85;word-break:keep-all;overflow-wrap:anywhere}
+
+.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.actions.two{grid-template-columns:repeat(2,1fr)}
+.act{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;height:74px;border-radius:16px;
+  border:1px solid var(--goldLine);background:rgba(22,35,80,.65);color:var(--gold2);font-size:13px;font-weight:700;
+  transition:transform .12s,opacity .2s;
+}
+.act:active{transform:scale(.97)}
+.act svg{width:24px;height:24px}
+.act[aria-pressed="true"]{color:var(--rose);border-color:rgba(239,139,154,.6)}
+.act[aria-pressed="true"] .heart-path{fill:currentColor}
+.act:disabled{opacity:.4}
+.link{display:block;margin:2px auto 0;padding:10px 12px;color:rgba(247,240,223,.68);font-size:14px;text-decoration:underline;text-underline-offset:4px}
+
+/* ---------- ハート一覧 ---------- */
+.fav-list{display:grid;gap:12px;margin-top:6px}
+.fav-item{
+  display:flex;flex-direction:column;gap:8px;padding:16px 18px;border-radius:14px;text-align:left;
+  background:linear-gradient(180deg,#fffaf0,#f1e6cc);color:var(--ink);box-shadow:0 8px 22px rgba(0,0,0,.3);
+}
+.fav-item .fq{font-family:var(--mincho);font-weight:700;font-size:16px;line-height:1.7;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.fav-item .fw{font-size:13px;color:var(--inkSoft)}
+.empty{text-align:center;color:rgba(247,240,223,.72);line-height:1.95;margin-top:48px;font-size:15px}
+
+/* ---------- 画像の窓 ---------- */
+.modal{position:fixed;inset:0;z-index:50;background:rgba(5,8,22,.8);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:16px}
+.modal[hidden]{display:none}
+.sheet{
+  width:100%;max-width:400px;max-height:100%;overflow:auto;display:flex;flex-direction:column;align-items:center;gap:12px;
+  padding:20px 18px calc(env(safe-area-inset-bottom) + 16px);
+  background:linear-gradient(180deg,#19275e,#0f173a);border:1px solid rgba(214,180,106,.35);border-radius:22px;
+}
+.shot-box{width:100%;max-width:240px;aspect-ratio:2/3;display:grid;place-items:center;border-radius:12px;background:rgba(255,255,255,.04)}
+.shot-box img{width:100%;height:100%;object-fit:contain;border-radius:10px;-webkit-touch-callout:default}
+.shot-box .wait{font-size:14px;color:rgba(247,240,223,.7)}
+.hint{font-size:13px;color:rgba(247,240,223,.72);text-align:center;line-height:1.7}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<div class="sky" id="sky" aria-hidden="true"></div>
+
+<!-- はじめ -->
+<section class="screen active" id="home">
+  <svg class="emblem" viewBox="0 0 100 100" aria-hidden="true">
+    <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" stroke-width="1.4"/>
+    <circle cx="50" cy="50" r="33" fill="none" stroke="currentColor" stroke-width=".8" stroke-dasharray="1 3.2"/>
+    <path d="M50 18 L54.5 45.5 L82 50 L54.5 54.5 L50 82 L45.5 54.5 L18 50 L45.5 45.5Z" fill="currentColor"/>
+    <g transform="rotate(45 50 50)"><path d="M50 32 L52.5 47.5 L68 50 L52.5 52.5 L50 68 L47.5 52.5 L32 50 L47.5 47.5Z" fill="currentColor" opacity=".5"/></g>
+  </svg>
+  <h1>ことばのカード</h1>
+  <p class="lead">3つの質問に答えると、<br>いまのあなたに合う<br>偉人のことばが1枚出てくるよ</p>
+  <div class="deck" aria-hidden="true">
+    <div class="cardback" data-back></div>
+    <div class="cardback" data-back></div>
+    <div class="cardback" data-back></div>
+  </div>
+  <button class="btn-gold" id="startBtn">カードを引く</button>
+  <button class="btn-ghost" id="favBtn">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.3s-7.4-4.5-9.2-9.1C1.5 7.9 3.6 4.6 7 4.6c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.4 0 5.5 3.3 4.2 6.6-1.8 4.6-9.2 9.1-9.2 9.1z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+    ハートのカード <span class="count" id="favCount">0</span>
+  </button>
+</section>
+
+<!-- 質問 -->
+<section class="screen" id="ask">
+  <div class="bar">
+    <button class="back" id="askBack"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>もどる</button>
+    <div class="dots" id="dots" aria-hidden="true"><i></i><i></i><i></i></div>
+    <span class="spacer"></span>
+  </div>
+  <div class="qwrap">
+    <p class="qnum" id="qNum"></p>
+    <h2 class="qtext" id="qText"></h2>
+    <div class="opts" id="opts"></div>
+  </div>
+</section>
+
+<!-- カード -->
+<section class="screen" id="draw">
+  <div class="bar">
+    <button class="back" id="drawBack"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>はじめへ</button>
+  </div>
+  <div class="stage" id="stage">
+    <div class="ghost g1 cardback" data-back></div>
+    <div class="ghost g2 cardback" data-back></div>
+    <div class="flip" id="flip">
+      <div class="face cardback" data-back></div>
+      <div class="face front" aria-live="polite">
+        <div class="f-face" id="fFace" hidden><img id="fImg" alt=""></div>
+        <svg class="f-orn" id="fOrn" viewBox="0 0 60 20" aria-hidden="true"><path d="M2 10h18M40 10h18" stroke="currentColor" stroke-width=".9"/><path d="M30 2.5l1.9 5.6 5.6 1.9-5.6 1.9L30 17.5l-1.9-5.6-5.6-1.9 5.6-1.9z" fill="currentColor"/></svg>
+        <p class="f-quote" id="fQuote"></p>
+        <span class="f-rule"></span>
+        <p class="f-who" id="fWho"></p>
+        <p class="f-role" id="fRole"></p>
+        <p class="f-src" id="fSrc"></p>
+      </div>
+    </div>
+  </div>
+  <div class="kai" id="kai"><span class="kai-label">やさしく言うと</span><p id="kaiText"></p></div>
+  <div class="actions" id="actions">
+    <button class="act" id="againBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="3" width="11" height="15" rx="2" transform="rotate(9 14 10.5)"/><rect x="4.5" y="5.5" width="11" height="15" rx="2" transform="rotate(-7 10 13)" fill="#16234f"/></svg>
+      もう一枚
+    </button>
+    <button class="act" id="heartBtn" aria-pressed="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path class="heart-path" d="M12 20.3s-7.4-4.5-9.2-9.1C1.5 7.9 3.6 4.6 7 4.6c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.4 0 5.5 3.3 4.2 6.6-1.8 4.6-9.2 9.1-9.2 9.1z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+      <span id="heartLabel">ハート</span>
+    </button>
+    <button class="act" id="imgBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><circle cx="9" cy="10" r="1.8"/><path d="M20.5 16l-5-5-8.5 8.5"/></svg>
+      画像にする
+    </button>
+  </div>
+  <button class="link" id="redoBtn">質問からやりなおす</button>
+</section>
+
+<!-- ハート一覧 -->
+<section class="screen" id="favs">
+  <div class="bar">
+    <button class="back" id="favBack"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>はじめへ</button>
+    <h2 class="bar-title">ハートのカード</h2>
+    <span class="spacer"></span>
+  </div>
+  <div class="fav-list" id="favList"></div>
+  <p class="empty" id="favEmpty" hidden>まだありません。<br>カードを引いて、心に残ったことばに<br>ハートをつけてね。</p>
+</section>
+
+<!-- 画像の窓 -->
+<div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-label="カードの画像">
+  <div class="sheet">
+    <div class="shot-box" id="shotBox"><span class="wait">画像をつくっています…</span></div>
+    <p class="hint" id="shotHint"></p>
+    <button class="btn-gold" id="shareBtn" hidden>LINEで送る・写真に保存</button>
+    <a class="btn-ghost" id="dlBtn" download="kotoba-card.png" hidden>画像をダウンロード</a>
+    <button class="link" id="closeModal">とじる</button>
+  </div>
+</div>
+
+<script>
+/* ===== ことば（60枚）=====
+   e: 元気  G=げんき F=ふつう H=へとへと
+   t: 気になること  B=勉強・仕事 P=人とのこと J=自分のこと N=とくにない
+   w: どうなりたい  K=がんばりたい Y=ひと休み M=前を向きたい W=笑いたい */
+const CARDS = [
+ ["edison1","結果が出ていない？　とんでもない。うまくいかない方法を、何千も見つけたんだ","トーマス・エジソン","発明家（アメリカ）","1910年の伝記より　仲間との会話で","うまくいかなかったことも「これはダメ」とわかった大事な一歩。むだな失敗なんてないよ。","GF","BJ","KM"],
+ ["edison2","天才とは、1%のひらめきと、99%の汗である","トーマス・エジソン","発明家（アメリカ）","1900年代のはじめに語ったことば","すごい人も、ひらめきだけでできたわけじゃない。ほとんどはコツコツ続けた汗のおかげ。","GF","B","K"],
+ ["nightingale","わたしが成功したのは、言いわけをしたことも、言いわけを受け入れたこともないからです","フローレンス・ナイチンゲール","看護師（イギリス）","手紙の中のことばとして伝わる","「でも」「だって」を言わずに、できることを探しつづけた人。きびしいけど、かっこいい。","G","BJ","K"],
+ ["ryoma1","世の人は　我を何とも　言わば言え\n我が成す事は　我のみぞ知る","坂本龍馬","幕末の志士","龍馬がよんだ歌として伝わる","まわりに何を言われても大丈夫。自分がやろうとしていることの意味は、自分がいちばんわかってる。","GF","PJ","KM"],
+ ["ryoma2","日本を今一度\nせんたくいたし申候","坂本龍馬","幕末の志士","1863年　姉・乙女への手紙","国をまるごと「洗濯」しちゃおう、という大きくて楽しい言い方。気分も一回まるっと洗いなおそう。","GFH","NJ","WM"],
+ ["fukuzawa","天は人の上に人を造らず、人の下に人を造らずと云えり","福沢諭吉","教育者・慶應義塾をつくった人","『学問のすゝめ』（1872年）","人は生まれたとき、上も下もない。福沢は「差をつくるのは、学ぶかどうかだ」と続けている。","GF","PB","M"],
+ ["keller","世界は苦しみであふれている。けれど、それを乗りこえることでも、あふれている","ヘレン・ケラー","作家・社会活動家（アメリカ）","『楽観主義』（1903年）","つらいことはたくさんある。でも、それを乗りこえた人も同じくらいいる。あなたもその一人になれる。","HF","JN","M"],
+ ["einstein1","人生は自転車に乗るようなもの。バランスをとるには、走りつづけなければならない","アルベルト・アインシュタイン","物理学者","1930年　息子への手紙","止まるとグラグラする。ゆっくりでいいからペダルをこいでいれば、ちゃんと立っていられる。","FH","JB","M"],
+ ["einstein2","わたしに特別な才能はない。ただ、ものすごく好奇心が強いだけだ","アルベルト・アインシュタイン","物理学者","1952年の手紙","「なんで？」「知りたい！」の気持ちがいちばんの才能。天才だって、はじまりはそこ。","GF","BJ","KW"],
+ ["einstein3","想像力は、知識よりも大切だ","アルベルト・アインシュタイン","物理学者","1929年のインタビュー","覚えたことには限りがあるけど、思いうかべることには限りがない。空想は大事な力。","GF","BN","WK"],
+ ["curie","人生でおそれるものは何もありません。ただ、理解すべきものがあるだけです","マリー・キュリー","科学者（ポーランド・フランス）","本人のことばとして伝わる","こわいのは、よくわからないから。調べて知れば、こわさはだんだん小さくなる。","F","BJ","MK"],
+ ["koshi1","過ちて改めざる、\n是を過ちと謂う","孔子","思想家（中国）","『論語』","まちがえるのはふつうのこと。本当のまちがいは、気づいたのに直さないこと。","F","PB","M"],
+ ["koshi2","これを知る者は、これを好む者にしかず。これを好む者は、これを楽しむ者にしかず","孔子","思想家（中国）","『論語』","知ってる人より好きな人、好きな人より楽しんでる人がいちばん強い。楽しんだもの勝ち。","GF","B","WK"],
+ ["koshi3","己の欲せざる所は、\n人に施すことなかれ","孔子","思想家（中国）","『論語』","自分がされていやなことは、人にもしない。シンプルだけど、人とうまくいくいちばんのコツ。","GF","P","M"],
+ ["roshi","千里の行も、\n足下に始まる","老子","思想家（中国）","『老子』","どんなに遠い道も、はじまりは足もとの一歩。まずは一歩だけでいい。","HF","BJN","KM"],
+ ["chaplin","人生は近くで見ると悲劇だが、遠くから見れば喜劇だ","チャールズ・チャップリン","喜劇王（イギリス）","本人のことばとして伝わる","いまはつらくても、時間がたってふりかえると「ちょっと笑えるかも」になることは多い。","HF","PJNB","W"],
+ ["kenji","雨ニモマケズ\n風ニモマケズ","宮沢賢治","作家・詩人","手帳に書きのこした詩（1931年）","雨にも風にも負けない、強くてやさしい人になりたい。賢治が病気のなかで書いた願いのことば。","HF","JN","KM"],
+ ["soseki","あせってはいけません。ただ、牛のように図々しく進んで行くのが大事です","夏目漱石","作家","1916年　若い作家たちへの手紙","あわてなくていい。牛みたいにのっしのっし、マイペースで進めば大丈夫。","GHF","BJ","YM"],
+ ["sontoku","積小為大\n小を積みて　大と為す","二宮尊徳（金次郎）","農村をたてなおした人","尊徳の教え","小さいことを積みかさねると、大きなことになる。今日の小さな一つが、ちゃんと効いてくる。","GF","B","K"],
+ ["takasugi","おもしろき　こともなき世を\nおもしろく","高杉晋作","幕末の志士","晋作の最期の句として伝わる","つまらない世の中なら、自分でおもしろくしちゃえばいい。楽しむかどうかは自分しだい。","GFH","NJ","W"],
+ ["yozan","為せば成る　為さねば成らぬ何事も\n成らぬは人の　為さぬなりけり","上杉鷹山","米沢藩の藩主","家臣に示した歌として伝わる","やればできる。やらなければできない。まずは、やってみることがいちばん大事なんだよ。","G","B","K"],
+ ["anne1","世界をよくするために、だれも一瞬だって待つ必要がない。なんてすてきなことでしょう","アンネ・フランク","『アンネの日記』を書いた少女","1944年に書いた文章","いいことをするのに、大人になるのも準備も待たなくていい。今日、ひとつできる。","GF","PN","M"],
+ ["anne2","いろいろあっても、わたしはまだ信じています。人は、ほんとうは心のよいものだと","アンネ・フランク","『アンネの日記』を書いた少女","1944年7月の日記","かくれて暮らすつらい毎日でも、アンネは人を信じていた。人をきらいになりそうなときに、思い出したいことば。","HF","P","M"],
+ ["saintex","いちばんたいせつなことは、\n目に見えない","サン＝テグジュペリ","作家・飛行士（フランス）","『星の王子さま』（1943年）　キツネのせりふ","やさしさや気持ちは、目では見えない。でも、心ではちゃんと見える。","FH","P","MY"],
+ ["mlk","飛べないなら走れ。\n走れないなら歩け。\n歩けないなら、はってでも行け。\n何をするにしても、\n前に進みつづけるんだ","キング牧師","公民権運動の指導者（アメリカ）","大学での演説","調子がわるい日は、小さな一歩でいい。止まらなければ、それで十分。","HF","JB","MK"],
+ ["fdr","わたしたちがおそれるべきものは、ただ一つ、おそれそのものだ","フランクリン・ルーズベルト","アメリカ大統領","1933年　就任演説","こわいと思う気持ちが、いちばん足をすくませる。こわさの正体を見れば、意外と小さい。","GF","BJ","KM"],
+ ["hokusai","七十三歳にして、ようやく鳥やけもの、草木のなりたちが少しわかってきた","葛飾北斎","浮世絵師","『富嶽百景』（1834年）のあとがき","あの北斎が七十を過ぎて「やっと少し」。しかも「百歳で神わざになる」と続けた。何歳からでも伸びる。","GF","BJ","KW"],
+ ["newton","わたしが遠くを見わたせたのは、巨人の肩に乗っていたからだ","アイザック・ニュートン","科学者（イギリス）","1675年の手紙","すごいことができたのは、前の人たちが積みあげてくれたおかげ。ひとりで全部やらなくていい。","FH","PB","MY"],
+ ["shotoku","和を以て\n貴しと為す","聖徳太子","飛鳥時代の政治家","十七条憲法（604年）","みんなが仲よく、話しあえることがいちばん大事。ケンカしたら、まず話そう。","GF","P","M"],
+ ["kenko","少しのことにも、\n先達はあらまほしき事なり","吉田兼好","『徒然草』を書いた人","『徒然草』","ちょっとしたことでも、教えてくれる先輩がいると心強い。わからないときは聞いていい。","FH","PB","MY"],
+ ["churchill","決して屈するな。\n決して、決して、決して","ウィンストン・チャーチル","イギリスの首相","1941年　母校での演説","国のピンチに、首相が学生へ送ったことば。何回もくり返すほど大事ってこと。","GF","BJ","K"],
+ ["gogh","何かをやってみる勇気がなかったら、人生はどうなってしまうだろう","フィンセント・ファン・ゴッホ","画家（オランダ）","1881年　弟テオへの手紙","失敗するかもと思っても、やってみる勇気があるから人生はおもしろくなる。","GF","JN","KM"],
+ ["franklin","うまく言うより、\nうまくやるほうがいい","ベンジャミン・フランクリン","政治家・発明家（アメリカ）","『貧しいリチャードの暦』（1737年）","口でじょうずに言うより、やってみせるほうがずっと伝わる。","G","BP","K"],
+ ["pasteur","チャンスは、準備ができている人のところにやってくる","ルイ・パスツール","科学者（フランス）","1854年の講演","いい出来事は急にやってくる。そのときつかめるかは、ふだんの準備しだい。","GF","B","K"],
+ ["saicho","一隅を照らす、\nこれ則ち国宝なり","最澄","天台宗をひらいたお坊さん","『山家学生式』（818年）","自分のいる場所を、ちょっと明るくできる人。それがいちばんの宝もの。目立たなくても大丈夫。","FH","PJ","MY"],
+ ["misuzu","みんなちがって、\nみんないい","金子みすゞ","詩人","詩「わたしと小鳥とすずと」","人とちがうのは、だめなことじゃない。ちがうから、それぞれにいいところがある。","HF","PJ","YM"],
+ ["akutagawa","人生は一箱のマッチに似ている。重大に扱うのはばかばかしい。重大に扱わなければ危険である","芥川龍之介","作家","『侏儒の言葉』","深刻になりすぎるとしんどい。でもテキトーすぎても危ない。ほどほどがちょうどいい。","GF","JN","WY"],
+ ["okamoto","芸術は\n爆発だ","岡本太郎","芸術家","1980年代のテレビCMでのことば","自分の中のエネルギーを、思いっきりドカンと出していい。じょうずかどうかより、まず出すこと。","G","JN","WK"],
+ ["torii","やってみなはれ。\nやらなわからしまへんで","鳥井信治郎","サントリーをつくった人","社員にかけた口ぐせとして伝わる","考えてばかりより、まずやってみる。やってみないと、どうなるかはわからない。","GF","BJ","KW"],
+ ["matsushita","自分には、\n自分に与えられた道がある","松下幸之助","パナソニックをつくった人","『道をひらく』（1968年）","人と同じ道じゃなくていい。あなたには、あなただけの道がちゃんとある。","FH","J","MY"],
+ ["yanase","人生は、\nよろこばせごっこ","やなせたかし","『アンパンマン』の作者","本人が本などでくり返し語ったことば","だれかをよろこばせると、自分もうれしくなる。人生はそのくり返しの遊びみたいなもの。","GF","P","WM"],
+ ["ohtani","憧れるのを\nやめましょう","大谷翔平","野球選手","2023年WBC決勝の前　チームへの声かけ","すごい相手を見上げていたら勝てない。今日だけは、同じ場所に立つ気持ちで。","G","BP","K"],
+ ["ichiro1","小さいことを積み重ねるのが、とんでもないところへ行くただひとつの道だと思っています","イチロー","野球選手","2004年　シーズン最多安打の記録をつくった日","一気にすごくはなれない。毎日の小さな積みかさねが、とんでもない場所まで連れていってくれる。","GF","B","K"],
+ ["ichiro2","人より頑張ることなんて、とてもできない。あくまで、はかりは自分の中にある","イチロー","野球選手","2019年　引退会見","人とくらべなくていい。きのうの自分より、ちょっとだけ。それで十分。","HF","JP","YM"],
+ ["hanyu","努力は嘘をつく。\nでも、無駄にはならない","羽生結弦","フィギュアスケート選手","インタビューでのことばとして知られる","がんばっても結果が出ないことはある。でも、がんばった時間は必ずどこかで生きてくる。","HF","B","MK"],
+ ["oh","努力は必ず報われる。もし報われない努力があるのならば、それはまだ努力と呼べない","王貞治","野球選手・監督","本人のことばとして広く知られる","世界のホームラン王のきびしいことば。報われないときは、やり方を変えてもう一回。","G","B","K"],
+ ["sawa","苦しいときは、\nわたしの背中を見て","澤穂希","サッカー選手","2008年　北京オリンピックでチームにかけたことば","苦しい場面で、チームを引っぱった澤さんのことば。たよれる背中があると、もう一歩がんばれる。いつか、あなたがその背中になれる。","H","P","KY"],
+ ["habu","報われないかもしれないところで、同じ情熱をもって続けられること。それこそが才能だと思う","羽生善治","将棋棋士","『決断力』（2005年）","結果が見えないときにも続けられる人が、いちばん強い。続けていること自体がすごい。","FH","BJ","KM"],
+ ["miyazaki","大事なことって、\nたいてい面倒くさいんだよ","宮崎駿","アニメーション映画監督","ドキュメンタリー番組でのことば","めんどうだなと思うことほど、じつは大事なことだったりする。めんどうは「大事」のサイン。","FH","BP","WK"],
+ ["kirin","おごらず、人と比べず、面白がって、平気に生きればいい","樹木希林","俳優","『一切なりゆき』（2018年）","えらぶらず、くらべず、おもしろがって、ケロッと生きる。それでいいんだよ。","HF","PJ","WY"],
+ ["jobs1","あなたの時間は限られている。だから、ほかのだれかの人生を生きて、むだにしてはいけない","スティーブ・ジョブズ","アップルをつくった人","2005年　大学の卒業式スピーチ","人の期待どおりに生きなくていい。自分がほんとうにやりたいことに時間をつかおう。","GF","J","M"],
+ ["jobs2","点と点は、先を見てつなぐことはできない。ふりかえったときにだけ、つながるんだ","スティーブ・ジョブズ","アップルをつくった人","2005年　大学の卒業式スピーチ","今やっていることが何の役に立つか、今はわからなくていい。あとで、ちゃんとつながる。","FH","BJ","MY"],
+ ["jobs3","ハングリーであれ。\n愚かであれ","スティーブ・ジョブズ","アップルをつくった人","2005年　卒業式スピーチの最後に、雑誌のことばを引いて","もっと知りたい、もっとやりたいを忘れない。かっこつけずに、思いきってやれるのも強さ。","G","JB","KW"],
+ ["malala","一人の子ども、一人の先生、一冊の本、そして一本のペンが、世界を変えられるのです","マララ・ユスフザイ","教育をうったえる活動家（パキスタン）","2013年　国連でのスピーチ","一人の力は小さくない。学ぶことは、世界を変える力になる。","GF","B","KM"],
+ ["jordan","わたしは人生で、何度も何度も何度も失敗してきた。だから成功できたんだ","マイケル・ジョーダン","バスケットボール選手（アメリカ）","1997年のテレビCMでのことば","9000本以上シュートを外した人のことば。失敗の数は、チャレンジした数。","FH","B","KM"],
+ ["rowling","何かに失敗せずに生きることはできない。生きていないのと同じくらい、びくびく用心して暮らすなら別だけど","J・K・ローリング","『ハリー・ポッター』の作者","2008年　大学の卒業式スピーチ","失敗しない人生なんてない。失敗するのは、ちゃんとチャレンジして生きている証拠。","HF","JB","M"],
+ ["brucelee","水のようになれ、\n友よ","ブルース・リー","俳優・武道家","1971年のテレビドラマでのことば","水は、コップに入ればコップの形になる。かたくならず、しなやかにいこう。","GHF","PJ","Y"],
+ ["socho","急がば\n回れ","宗長","室町時代の連歌師","宗長がよんだ歌にあることばとして伝わる","あせって近道すると、かえって遠回り。ゆっくり確実な道が、いちばん早いこともある。","GHF","BJ","Y"],
+ ["mitchell","結局のところ、\n明日はまた別の日なのだから","マーガレット・ミッチェル","作家（アメリカ）","『風と共に去りぬ』（1936年）　主人公スカーレットの最後のせりふ","今日うまくいかなくても、明日はまた新しい一日。今日はもう休んでいいよ。","H","NJ","YM"],
+ ["ryokan","この里に　手まりつきつつ　子どもらと\n遊ぶ春日は　暮れずともよし","良寛","お坊さん・歌人","良寛がよんだ歌","子どもたちと手まりで遊ぶ春の日は、ずっと終わらなくていい。のんびり遊ぶ時間も宝もの。","GHF","PN","YW"]
+].map(([id,text,who,role,src,kai,e,t,w])=>({id,text,who,role,src,kai,e,t,w}));
+const BY_ID = Object.fromEntries(CARDS.map(c=>[c.id,c]));
+
+const BATT = n => `<svg class="ico" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="10.5" width="26" height="15" rx="3.5"/><path d="M32.5 15.5v5" stroke-linecap="round"/><rect x="6" y="13.5" width="${n}" height="9" rx="1.2" fill="currentColor" stroke="none"/></svg>`;
+const QUESTIONS = [
+  {key:"e", text:"いまの げんきは\nどのくらい？", opts:[
+    ["G","げんき！","",BATT(20)],["F","ふつう","",BATT(11)],["H","へとへと","",BATT(3.5)]]},
+  {key:"t", text:"いま、気になって\nいることは？", opts:[
+    ["B","勉強や仕事のこと"],["P","人とのこと","友だち・家族・まわりの人"],["J","自分のこと","性格・これからのこと"],["N","とくにない"]]},
+  {key:"w", text:"このあと、\nどうなりたい？", opts:[
+    ["K","がんばりたい"],["Y","ひと休みしたい"],["M","前を向きたい"],["W","笑いたい"]]}
+];
+
+/* ===== 道具 ===== */
+const $ = s => document.querySelector(s);
+const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const sleep = ms => new Promise(r => setTimeout(r, RM ? 0 : ms));
+const store = {
+  get(k,d){ try{ const v=localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+const FAV_KEY="kotoba-card:favs", REC_KEY="kotoba-card:recent";
+
+/* カードの裏の模様 */
+const BACK_SVG = `<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="50" cy="50" r="33" fill="none" stroke="currentColor" stroke-width=".8" stroke-dasharray="1 3.2"/><path d="M50 18 L54.5 45.5 L82 50 L54.5 54.5 L50 82 L45.5 54.5 L18 50 L45.5 45.5Z" fill="currentColor"/><g transform="rotate(45 50 50)"><path d="M50 32 L52.5 47.5 L68 50 L52.5 52.5 L50 68 L47.5 52.5 L32 50 L47.5 47.5Z" fill="currentColor" opacity=".5"/></g></svg>`;
+document.querySelectorAll("[data-back]").forEach(el => el.innerHTML = BACK_SVG);
+
+/* 星空 */
+(() => {
+  const sky=$("#sky"); let h="";
+  for(let i=0;i<70;i++){
+    const s=(Math.random()*1.8+.8).toFixed(1);
+    h+=`<i style="left:${(Math.random()*100).toFixed(2)}%;top:${(Math.random()*100).toFixed(2)}%;width:${s}px;height:${s}px;animation-delay:${(Math.random()*5).toFixed(2)}s;animation-duration:${(3+Math.random()*4).toFixed(1)}s"></i>`;
+  }
+  sky.innerHTML=h;
+})();
+
+/* 画面の切り替え */
+function show(id){
+  document.querySelectorAll(".screen").forEach(s => s.classList.toggle("active", s.id===id));
+  window.scrollTo(0,0);
+  if(id==="home") $("#favCount").textContent = store.get(FAV_KEY,[]).length;
+}
+
+/* ===== 質問 ===== */
+let step=0, ans={};
+function renderQ(){
+  const Q=QUESTIONS[step];
+  $("#qNum").textContent = `しつもん ${step+1} / 3`;
+  $("#qText").innerHTML = Q.text.replace(/\n/g,"<br>");
+  document.querySelectorAll("#dots i").forEach((d,i)=>d.classList.toggle("on", i<=step));
+  $("#opts").innerHTML = Q.opts.map(([v,label,sub,ico]) =>
+    `<button class="opt" data-v="${v}">${ico || '<span class="mark"></span>'}<span>${label}${sub?`<span class="sub">${sub}</span>`:""}</span></button>`
+  ).join("");
+}
+$("#opts").addEventListener("click", e => {
+  const b=e.target.closest(".opt"); if(!b || $("#opts").dataset.lock) return;
+  $("#opts").dataset.lock="1";
+  b.classList.add("picked");
+  ans[QUESTIONS[step].key]=b.dataset.v;
+  setTimeout(()=>{
+    delete $("#opts").dataset.lock;
+    if(step<QUESTIONS.length-1){ step++; renderQ(); }
+    else startDraw();
+  }, RM?0:200);
+});
+$("#startBtn").onclick = () => { step=0; ans={}; renderQ(); show("ask"); };
+$("#askBack").onclick = () => { if(step===0) show("home"); else { step--; renderQ(); } };
+
+/* ===== 合うカードを選ぶ ===== */
+function rank(a){
+  const recent=store.get(REC_KEY,[]);
+  return CARDS.map(c=>{
+    let s=0;
+    if(c.w.includes(a.w)) s+=4;
+    if(a.t==="N") s += c.t.includes("N") ? 2 : 1;
+    else if(c.t.includes(a.t)) s+=2;
+    if(c.e.includes(a.e)) s+=1;
+    else if(a.e==="H") s-=2;
+    if(recent.includes(c.id)) s-=1.5;
+    return {c, s: s + Math.random()*0.95};
+  }).sort((x,y)=>y.s-x.s).map(x=>x.c);
+}
+
+/* ===== カードを出す ===== */
+let ranked=[], idx=0, current=null, mode="draw", busyNow=false;
+const flip=$("#flip"), stage=$("#stage"), kai=$("#kai");
+
+function sizeClass(t){
+  const n=t.replace(/\s/g,"").length;
+  return n<=12 ? "xl" : n<=24 ? "l" : n<=40 ? "m" : "s";
+}
+function fillCard(c){
+  const q=$("#fQuote");
+  q.className="f-quote "+sizeClass(c.text);
+  q.textContent=phrases(c.text);
+  $("#fWho").textContent=c.who.replace(/・/g,"・​");
+  $("#fRole").textContent=c.role;
+  $("#fSrc").textContent=c.src;
+  $("#kaiText").textContent=phrases(c.kai);
+  const face=$("#fFace"), img=$("#fImg"), orn=$("#fOrn");
+  face.hidden=false; orn.style.display="none";
+  img.onerror=()=>{ face.hidden=true; orn.style.display=""; };
+  img.alt="";
+  img.src=imgPath(c);
+}
+const imgPath = c => `img/${c.id.replace(/\d+$/,"")}.png`;
+function setBusy(v){
+  busyNow=v;
+  ["#againBtn","#heartBtn","#imgBtn"].forEach(s=>$(s).disabled=v);
+}
+function updateHeart(){
+  const on = current && store.get(FAV_KEY,[]).includes(current.id);
+  $("#heartBtn").setAttribute("aria-pressed", on ? "true" : "false");
+  $("#heartLabel").textContent = on ? "保存ずみ" : "ハート";
+}
+async function reveal(c, shuffle=true){
+  setBusy(true);
+  kai.classList.remove("show");
+  if(flip.classList.contains("open")){ flip.classList.remove("open"); await sleep(760); }
+  if(shuffle){ stage.classList.add("shuffling"); await sleep(920); stage.classList.remove("shuffling"); }
+  current=c; fillCard(c); updateHeart();
+  if(mode==="draw"){ const r=store.get(REC_KEY,[]).filter(x=>x!==c.id); r.unshift(c.id); store.set(REC_KEY, r.slice(0,12)); }
+  makeImage(c).catch(()=>{});
+  flip.classList.add("open"); await sleep(760);
+  kai.classList.add("show");
+  setBusy(false);
+}
+function setMode(m){
+  mode=m;
+  $("#againBtn").hidden = (m==="fav");
+  $("#actions").classList.toggle("two", m==="fav");
+  $("#redoBtn").textContent = m==="fav" ? "ハートのカード一覧へ" : "質問からやりなおす";
+}
+function startDraw(){
+  ranked=rank(ans); idx=0; setMode("draw");
+  flip.classList.remove("open"); kai.classList.remove("show");
+  show("draw");
+  reveal(ranked[0], true);
+}
+$("#againBtn").onclick = () => { if(busyNow) return; idx=(idx+1)%ranked.length; reveal(ranked[idx], true); };
+$("#heartBtn").onclick = () => {
+  if(!current) return;
+  let f=store.get(FAV_KEY,[]);
+  f = f.includes(current.id) ? f.filter(x=>x!==current.id) : [current.id, ...f];
+  store.set(FAV_KEY,f); updateHeart();
+};
+$("#redoBtn").onclick = () => { if(mode==="fav") openFavs(); else { step=0; ans={}; renderQ(); show("ask"); } };
+$("#drawBack").onclick = () => show("home");
+
+/* ===== ハート一覧 ===== */
+function openFavs(){
+  const ids=store.get(FAV_KEY,[]).filter(id=>BY_ID[id]);
+  $("#favList").innerHTML = ids.map(id=>{
+    const c=BY_ID[id];
+    return `<button class="fav-item" data-id="${c.id}"><span class="fq">${esc(c.text.replace(/\n/g,""))}</span><span class="fw">${esc(c.who)}　${esc(c.role)}</span></button>`;
+  }).join("");
+  $("#favEmpty").hidden = ids.length>0;
+  show("favs");
+}
+function esc(s){ return s.replace(/[&<>"]/g, ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch])); }
+$("#favBtn").onclick = openFavs;
+$("#favBack").onclick = () => show("home");
+$("#favList").addEventListener("click", e=>{
+  const b=e.target.closest(".fav-item"); if(!b) return;
+  setMode("fav");
+  flip.classList.remove("open"); kai.classList.remove("show");
+  show("draw");
+  reveal(BY_ID[b.dataset.id], false);
+});
+
+/* ===== 画像にする ===== */
+const imgCache=new Map();
+const MINCHO='"Zen Old Mincho","Hiragino Mincho ProN","Yu Mincho",serif';
+const GOTHIC='"Zen Kaku Gothic New","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif';
+const NO_START="、。，．・：；？！ー」』）】〉》〕…‥ぁぃぅぇぉっゃゅょゎァィゥェォッャュョヮヵヶ%";
+const NO_END="「『（【〈《〔";
+/* 文節（だいたい）の切れ目に見えない区切り(​)を入れる。
+   ひらがなだけの語（助詞・送りがな）は前の語にくっつける */
+const SEG = (typeof Intl!=="undefined" && Intl.Segmenter) ? new Intl.Segmenter("ja",{granularity:"word"}) : null;
+const PUNCT_END = /[、。！？」』　]$/;
+function phrases(text){
+  return text.split("\n").map(line=>{
+    if(!SEG) return line.replace(/([、。！？」』　])/g,"$1​");
+    let out="", prevPunct=false;
+    for(const {segment, isWordLike} of SEG.segment(line)){
+      const hira = /^[ぁ-ゟー]+$/.test(segment);
+      const badStart = NO_START.includes(segment[0]);
+      if(out && !badStart && (prevPunct || (isWordLike && !hira))) out+="​";
+      out+=segment;
+      prevPunct = PUNCT_END.test(segment);
+    }
+    return out;
+  }).join("\n");
+}
+/* 文節ごとに折り返す。1行に入らない文節だけ文字単位で折る */
+function wrapText(ctx, text, maxW){
+  const out=[];
+  const fits = s => ctx.measureText(s).width<=maxW;
+  for(const para of phrases(text).split("\n")){
+    const chunks = para.split("​");
+    let line="";
+    for(const chunk of chunks){
+      if(fits(line+chunk)){ line+=chunk; continue; }
+      if(line){ out.push(line); line=""; }
+      if(fits(chunk)){ line=chunk; continue; }
+      for(const ch of chunk){
+        const test=line+ch;
+        if(line && !fits(test)){
+          if(NO_START.includes(ch)){ line=test; continue; }
+          let carry="";
+          if(NO_END.includes(line.slice(-1))){ carry=line.slice(-1); line=line.slice(0,-1); }
+          out.push(line); line=carry+ch;
+        } else line=test;
+      }
+    }
+    out.push(line.replace(/　+$/,""));
+  }
+  return out;
+}
+function rr(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+}
+function star4(ctx,cx,cy,R,r){
+  ctx.beginPath();
+  for(let i=0;i<8;i++){
+    const a=-Math.PI/2 + i*Math.PI/4, rad = i%2 ? r : R;
+    ctx.lineTo(cx+Math.cos(a)*rad, cy+Math.sin(a)*rad);
+  }
+  ctx.closePath(); ctx.fill();
+}
+function makeImage(c){
+  if(imgCache.has(c.id)) return imgCache.get(c.id);
+  const p=(async()=>{
+    try{
+      await Promise.race([
+        Promise.all([
+          document.fonts.load(`700 60px "Zen Old Mincho"`, c.text+c.who+"ことばのカード"),
+          document.fonts.load(`500 30px "Zen Kaku Gothic New"`, c.kai+c.role+c.src),
+          document.fonts.load(`700 24px "Zen Kaku Gothic New"`, "やさしく言うと")
+        ]),
+        new Promise(r=>setTimeout(r,4000))
+      ]);
+    }catch(e){}
+    const face = await new Promise(res=>{ const im=new Image(); im.onload=()=>res(im); im.onerror=()=>res(null); im.src=imgPath(c); });
+    const W=1080,H=1620, cv=document.createElement("canvas"); cv.width=W; cv.height=H;
+    const x=cv.getContext("2d");
+    const bg=x.createRadialGradient(W/2,-100,40,W/2,H*.35,H);
+    bg.addColorStop(0,"#26397f"); bg.addColorStop(.55,"#0f1938"); bg.addColorStop(1,"#070b1d");
+    x.fillStyle=bg; x.fillRect(0,0,W,H);
+    let seed=11; const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+    x.fillStyle="#fff";
+    for(let i=0;i<120;i++){ x.globalAlpha=.2+rnd()*.6; x.beginPath(); x.arc(rnd()*W,rnd()*H,rnd()*2.2+.6,0,Math.PI*2); x.fill(); }
+    x.globalAlpha=1;
+
+    const cx=100, cy=110, cw=W-200, ch=H-290;
+    x.save(); x.shadowColor="rgba(0,0,0,.55)"; x.shadowBlur=60; x.shadowOffsetY=24;
+    rr(x,cx,cy,cw,ch,40);
+    const pg=x.createLinearGradient(0,cy,0,cy+ch); pg.addColorStop(0,"#fffaf0"); pg.addColorStop(1,"#efe2c5");
+    x.fillStyle=pg; x.fill(); x.restore();
+    x.strokeStyle="#c6a25a"; x.lineWidth=3; rr(x,cx+20,cy+20,cw-40,ch-40,26); x.stroke();
+    x.globalAlpha=.6; x.lineWidth=1.2; rr(x,cx+32,cy+32,cw-64,ch-64,18); x.stroke(); x.globalAlpha=1;
+
+    const inner=cw-210;
+    let fs=68, lines=[], lh=0;
+    for(; fs>=34; fs-=2){ x.font=`700 ${fs}px ${MINCHO}`; lines=wrapText(x,c.text,inner); lh=fs*1.7; if(lines.length*lh<=(face?470:560)) break; }
+    x.font=`500 31px ${GOTHIC}`; const kl=wrapText(x,c.kai,inner); const klh=31*1.75;
+    const H_ORN=face?220:36,G1=face?48:56,QH=lines.length*lh,G2=64,WH=50,RH=40,SH=36,G3=54,LH=44,KH=kl.length*klh;
+    let y = cy + (ch-(H_ORN+G1+QH+G2+WH+RH+SH+G3+LH+KH))/2;
+
+    x.fillStyle="#b8914a"; x.strokeStyle="#b8914a"; x.lineWidth=1.6;
+    if(face){
+      const r=104, fx=W/2, fy=y+H_ORN/2;
+      x.save(); x.strokeStyle="rgba(198,162,90,.25)"; x.lineWidth=14; x.beginPath(); x.arc(fx,fy,r+8,0,Math.PI*2); x.stroke(); x.restore();
+      const fg=x.createRadialGradient(fx,fy-20,10,fx,fy,r); fg.addColorStop(0,"#fffdf6"); fg.addColorStop(1,"#f3e8cf");
+      x.fillStyle=fg; x.beginPath(); x.arc(fx,fy,r,0,Math.PI*2); x.fill();
+      x.strokeStyle="#c6a25a"; x.lineWidth=3; x.stroke();
+      const box=r*1.6, s=Math.min(box/face.naturalWidth, box/face.naturalHeight);
+      const dw=face.naturalWidth*s, dh=face.naturalHeight*s;
+      x.save(); x.beginPath(); x.arc(fx,fy,r-2,0,Math.PI*2); x.clip();
+      x.drawImage(face, fx-dw/2, fy-dh/2, dw, dh); x.restore();
+    } else {
+      star4(x,W/2,y+H_ORN/2,18,5);
+      x.beginPath(); x.moveTo(W/2-110,y+H_ORN/2); x.lineTo(W/2-36,y+H_ORN/2); x.moveTo(W/2+36,y+H_ORN/2); x.lineTo(W/2+110,y+H_ORN/2); x.stroke();
+    }
+    y+=H_ORN+G1;
+
+    x.textAlign="center"; x.textBaseline="middle";
+    x.fillStyle="#18203d"; x.font=`700 ${fs}px ${MINCHO}`;
+    lines.forEach((l,i)=>x.fillText(l,W/2,y+lh*i+lh/2));
+    y+=QH+G2/2;
+    x.strokeStyle="#c6a25a"; x.lineWidth=2; x.beginPath(); x.moveTo(W/2-80,y); x.lineTo(W/2+80,y); x.stroke();
+    y+=G2/2;
+    x.font=`700 42px ${MINCHO}`; x.fillText(c.who,W/2,y+WH/2); y+=WH;
+    x.fillStyle="#4a5272"; x.font=`500 27px ${GOTHIC}`; x.fillText(c.role,W/2,y+RH/2); y+=RH;
+    x.fillStyle="#8a7f63"; x.font=`500 23px ${GOTHIC}`; x.fillText(c.src,W/2,y+SH/2); y+=SH+G3;
+    x.fillStyle="#a8823d"; x.font=`700 25px ${GOTHIC}`; x.fillText("やさしく言うと",W/2,y+LH/2); y+=LH;
+    x.fillStyle="#353c5c"; x.font=`500 31px ${GOTHIC}`;
+    kl.forEach((l,i)=>x.fillText(l,W/2,y+klh*i+klh/2));
+
+    x.fillStyle="#d6b46a"; x.font=`700 32px ${MINCHO}`;
+    x.fillText("ことばのカード",W/2,H-90);
+    star4(x,W/2-150,H-90,9,2.5); star4(x,W/2+150,H-90,9,2.5);
+
+    const blob = await new Promise(r=>cv.toBlob(r,"image/png"));
+    if(!blob) throw new Error("toBlob");
+    return { blob, url: URL.createObjectURL(blob), file: new File([blob], "kotoba-card.png", {type:"image/png"}) };
+  })();
+  imgCache.set(c.id,p);
+  p.catch(()=>imgCache.delete(c.id));
+  return p;
+}
+
+const isTouch = matchMedia("(pointer: coarse)").matches;
+let shotData=null;
+$("#imgBtn").onclick = async () => {
+  if(!current) return;
+  const c=current;
+  shotData=null;
+  $("#shotBox").innerHTML='<span class="wait">画像をつくっています…</span>';
+  $("#shareBtn").hidden=true; $("#dlBtn").hidden=true; $("#shotHint").textContent="";
+  $("#modal").hidden=false;
+  try{
+    const d=await makeImage(c);
+    if(current!==c || $("#modal").hidden) return;
+    shotData=d;
+    $("#shotBox").innerHTML=`<img src="${d.url}" alt="${esc(c.who)}のことばのカード">`;
+    const canShare = !!(navigator.canShare && navigator.canShare({files:[d.file]}));
+    $("#shareBtn").hidden = !canShare;
+    $("#dlBtn").href=d.url;
+    $("#dlBtn").hidden = canShare && isTouch;
+    $("#shotHint").textContent = isTouch
+      ? (canShare ? "ボタンを押すと、LINEや「画像を保存」が選べます。画像を長押ししても保存できます" : "画像を長押しすると保存できます")
+      : "スマホで開くと、LINEに直接送れます";
+  }catch(e){
+    $("#shotBox").innerHTML='<span class="wait">画像をつくれませんでした。<br>もう一度ためしてね</span>';
+  }
+};
+$("#shareBtn").onclick = async () => {
+  if(!shotData) return;
+  try{ await navigator.share({files:[shotData.file]}); }catch(e){ /* やめたときは何もしない */ }
+};
+$("#closeModal").onclick = () => { $("#modal").hidden=true; };
+$("#modal").addEventListener("click", e=>{ if(e.target.id==="modal") $("#modal").hidden=true; });
+document.addEventListener("keydown", e=>{ if(e.key==="Escape") $("#modal").hidden=true; });
+
+show("home");
+</script>
+</body>
+</html>
