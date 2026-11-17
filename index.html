@@ -209,7 +209,7 @@ h1{font-family:var(--mincho);font-weight:700;font-size:34px;letter-spacing:.18em
   padding:20px 18px calc(env(safe-area-inset-bottom) + 16px);
   background:linear-gradient(180deg,#19275e,#0f173a);border:1px solid rgba(214,180,106,.35);border-radius:22px;
 }
-.shot-box{width:100%;max-width:240px;aspect-ratio:2/3;display:grid;place-items:center;border-radius:12px;background:rgba(255,255,255,.04)}
+.shot-box{width:100%;max-width:250px;aspect-ratio:5/7;display:grid;place-items:center;border-radius:12px;background:rgba(255,255,255,.04)}
 .shot-box img{width:100%;height:100%;object-fit:contain;border-radius:10px;-webkit-touch-callout:default}
 .shot-box .wait{font-size:14px;color:rgba(247,240,223,.7)}
 .hint{font-size:13px;color:rgba(247,240,223,.72);text-align:center;line-height:1.7}
@@ -580,17 +580,20 @@ function phrases(text){
     return out;
   }).join("\n");
 }
-/* 文節ごとに折り返す。1行に入らない文節だけ文字単位で折る */
+/* 文節ごとに折り返す。1行に入らない文節だけ文字単位で折る。
+   文字単位で折ったときや、最後の行が1文字だけになったときは out.bad=true（呼ぶ側で文字を小さくする） */
 function wrapText(ctx, text, maxW){
-  const out=[];
+  const out=[]; let bad=false;
   const fits = s => ctx.measureText(s).width<=maxW;
   for(const para of phrases(text).split("\n")){
     const chunks = para.split("​");
+    const startLen=out.length;
     let line="";
     for(const chunk of chunks){
       if(fits(line+chunk)){ line+=chunk; continue; }
       if(line){ out.push(line); line=""; }
       if(fits(chunk)){ line=chunk; continue; }
+      bad=true;
       for(const ch of chunk){
         const test=line+ch;
         if(line && !fits(test)){
@@ -601,9 +604,27 @@ function wrapText(ctx, text, maxW){
         } else line=test;
       }
     }
-    out.push(line.replace(/　+$/,""));
+    line=line.replace(/　+$/,"");
+    if(out.length>startLen && [...line].length<=1) bad=true;
+    out.push(line);
   }
+  out.bad=bad;
   return out;
+}
+/* いちばん大きく、きれいに折れる文字サイズを探す */
+function fitText(ctx, text, maxW, maxH, from, to, lhRate, weight, family){
+  let fallback=null;
+  for(let fs=from; fs>=to; fs-=2){
+    ctx.font=`${weight} ${fs}px ${family}`;
+    const lines=wrapText(ctx,text,maxW), h=lines.length*fs*lhRate;
+    if(h<=maxH){
+      if(!lines.bad) return {fs,lines,lh:fs*lhRate};
+      if(!fallback) fallback={fs,lines,lh:fs*lhRate};
+    }
+  }
+  if(fallback) return fallback;
+  ctx.font=`${weight} ${to}px ${family}`;
+  return {fs:to, lines:wrapText(ctx,text,maxW), lh:to*lhRate};
 }
 function rr(ctx,x,y,w,h,r){
   ctx.beginPath();
@@ -618,13 +639,14 @@ function star4(ctx,cx,cy,R,r){
   }
   ctx.closePath(); ctx.fill();
 }
+/* カードだけの画像（まわりは透明）。1000×1400＝画面のカードと同じ縦横比 */
 function makeImage(c){
   if(imgCache.has(c.id)) return imgCache.get(c.id);
   const p=(async()=>{
     try{
       await Promise.race([
         Promise.all([
-          document.fonts.load(`700 60px "Zen Old Mincho"`, c.text+c.who+"ことばのカード"),
+          document.fonts.load(`700 60px "Zen Old Mincho"`, c.text+c.who),
           document.fonts.load(`500 30px "Zen Kaku Gothic New"`, c.kai+c.role+c.src),
           document.fonts.load(`700 24px "Zen Kaku Gothic New"`, "やさしく言うと")
         ]),
@@ -632,39 +654,33 @@ function makeImage(c){
       ]);
     }catch(e){}
     const face = await new Promise(res=>{ const im=new Image(); im.onload=()=>res(im); im.onerror=()=>res(null); im.src=imgPath(c); });
-    const W=1080,H=1620, cv=document.createElement("canvas"); cv.width=W; cv.height=H;
+    const W=1000,H=1400, cv=document.createElement("canvas"); cv.width=W; cv.height=H;
     const x=cv.getContext("2d");
-    const bg=x.createRadialGradient(W/2,-100,40,W/2,H*.35,H);
-    bg.addColorStop(0,"#26397f"); bg.addColorStop(.55,"#0f1938"); bg.addColorStop(1,"#070b1d");
-    x.fillStyle=bg; x.fillRect(0,0,W,H);
-    let seed=11; const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
-    x.fillStyle="#fff";
-    for(let i=0;i<120;i++){ x.globalAlpha=.2+rnd()*.6; x.beginPath(); x.arc(rnd()*W,rnd()*H,rnd()*2.2+.6,0,Math.PI*2); x.fill(); }
-    x.globalAlpha=1;
 
-    const cx=100, cy=110, cw=W-200, ch=H-290;
-    x.save(); x.shadowColor="rgba(0,0,0,.55)"; x.shadowBlur=60; x.shadowOffsetY=24;
-    rr(x,cx,cy,cw,ch,40);
-    const pg=x.createLinearGradient(0,cy,0,cy+ch); pg.addColorStop(0,"#fffaf0"); pg.addColorStop(1,"#efe2c5");
-    x.fillStyle=pg; x.fill(); x.restore();
-    x.strokeStyle="#c6a25a"; x.lineWidth=3; rr(x,cx+20,cy+20,cw-40,ch-40,26); x.stroke();
-    x.globalAlpha=.6; x.lineWidth=1.2; rr(x,cx+32,cy+32,cw-64,ch-64,18); x.stroke(); x.globalAlpha=1;
+    rr(x,0,0,W,H,48);
+    const pg=x.createLinearGradient(0,0,0,H); pg.addColorStop(0,"#fffaf0"); pg.addColorStop(1,"#efe2c5");
+    x.fillStyle=pg; x.fill();
+    x.strokeStyle="#c6a25a"; x.lineWidth=3; rr(x,22,22,W-44,H-44,32); x.stroke();
+    x.globalAlpha=.6; x.lineWidth=1.2; rr(x,34,34,W-68,H-68,24); x.stroke(); x.globalAlpha=1;
 
-    const inner=cw-210;
-    let fs=68, lines=[], lh=0;
-    for(; fs>=34; fs-=2){ x.font=`700 ${fs}px ${MINCHO}`; lines=wrapText(x,c.text,inner); lh=fs*1.7; if(lines.length*lh<=(face?470:560)) break; }
-    x.font=`500 31px ${GOTHIC}`; const kl=wrapText(x,c.kai,inner); const klh=31*1.75;
-    const H_ORN=face?220:36,G1=face?48:56,QH=lines.length*lh,G2=64,WH=50,RH=40,SH=36,G3=54,LH=44,KH=kl.length*klh;
-    let y = cy + (ch-(H_ORN+G1+QH+G2+WH+RH+SH+G3+LH+KH))/2;
+    const inner=W-220, AVAIL=H-180;
+    const kai=fitText(x,c.kai,inner,3*31*1.75,31,25,1.75,500,GOTHIC);
+    const who=fitText(x,c.who,inner,2*42*1.35,42,30,1.35,700,MINCHO);
+    const H_ORN=face?210:36,G1=face?44:56,G2=60,RH=38,SH=34,G3=50,LH=42;
+    const WH=who.lines.length*who.lh, KH=kai.lines.length*kai.lh;
+    const fixed=H_ORN+G1+G2+WH+RH+SH+G3+LH+KH;
+    const q=fitText(x,c.text,inner,Math.max(200,AVAIL-fixed),66,32,1.7,700,MINCHO);
+    const QH=q.lines.length*q.lh;
+    let y=(H-(fixed+QH))/2;
 
     x.fillStyle="#b8914a"; x.strokeStyle="#b8914a"; x.lineWidth=1.6;
     if(face){
-      const r=104, fx=W/2, fy=y+H_ORN/2;
+      const r=100, fx=W/2, fy=y+H_ORN/2;
       x.save(); x.strokeStyle="rgba(198,162,90,.25)"; x.lineWidth=14; x.beginPath(); x.arc(fx,fy,r+8,0,Math.PI*2); x.stroke(); x.restore();
       const fg=x.createRadialGradient(fx,fy-20,10,fx,fy,r); fg.addColorStop(0,"#fffdf6"); fg.addColorStop(1,"#f3e8cf");
       x.fillStyle=fg; x.beginPath(); x.arc(fx,fy,r,0,Math.PI*2); x.fill();
       x.strokeStyle="#c6a25a"; x.lineWidth=3; x.stroke();
-      const box=r*1.6, s=Math.min(box/face.naturalWidth, box/face.naturalHeight);
+      const box=r*1.56, s=Math.min(box/face.naturalWidth, box/face.naturalHeight);
       const dw=face.naturalWidth*s, dh=face.naturalHeight*s;
       x.save(); x.beginPath(); x.arc(fx,fy,r-2,0,Math.PI*2); x.clip();
       x.drawImage(face, fx-dw/2, fy-dh/2, dw, dh); x.restore();
@@ -675,21 +691,18 @@ function makeImage(c){
     y+=H_ORN+G1;
 
     x.textAlign="center"; x.textBaseline="middle";
-    x.fillStyle="#18203d"; x.font=`700 ${fs}px ${MINCHO}`;
-    lines.forEach((l,i)=>x.fillText(l,W/2,y+lh*i+lh/2));
+    x.fillStyle="#18203d"; x.font=`700 ${q.fs}px ${MINCHO}`;
+    q.lines.forEach((l,i)=>x.fillText(l,W/2,y+q.lh*i+q.lh/2));
     y+=QH+G2/2;
     x.strokeStyle="#c6a25a"; x.lineWidth=2; x.beginPath(); x.moveTo(W/2-80,y); x.lineTo(W/2+80,y); x.stroke();
     y+=G2/2;
-    x.font=`700 42px ${MINCHO}`; x.fillText(c.who,W/2,y+WH/2); y+=WH;
+    x.font=`700 ${who.fs}px ${MINCHO}`;
+    who.lines.forEach((l,i)=>x.fillText(l,W/2,y+who.lh*i+who.lh/2)); y+=WH;
     x.fillStyle="#4a5272"; x.font=`500 27px ${GOTHIC}`; x.fillText(c.role,W/2,y+RH/2); y+=RH;
     x.fillStyle="#8a7f63"; x.font=`500 23px ${GOTHIC}`; x.fillText(c.src,W/2,y+SH/2); y+=SH+G3;
     x.fillStyle="#a8823d"; x.font=`700 25px ${GOTHIC}`; x.fillText("やさしく言うと",W/2,y+LH/2); y+=LH;
-    x.fillStyle="#353c5c"; x.font=`500 31px ${GOTHIC}`;
-    kl.forEach((l,i)=>x.fillText(l,W/2,y+klh*i+klh/2));
-
-    x.fillStyle="#d6b46a"; x.font=`700 32px ${MINCHO}`;
-    x.fillText("ことばのカード",W/2,H-90);
-    star4(x,W/2-150,H-90,9,2.5); star4(x,W/2+150,H-90,9,2.5);
+    x.fillStyle="#353c5c"; x.font=`500 ${kai.fs}px ${GOTHIC}`;
+    kai.lines.forEach((l,i)=>x.fillText(l,W/2,y+kai.lh*i+kai.lh/2));
 
     const blob = await new Promise(r=>cv.toBlob(r,"image/png"));
     if(!blob) throw new Error("toBlob");
